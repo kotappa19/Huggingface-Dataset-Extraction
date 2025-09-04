@@ -6,6 +6,7 @@
 *.pyd
 *.pyw
 *.pyz
+*.zip
 pmc_clinical_VQA_raw/
 dataset_extraction/
 __pycache__/
@@ -13,3 +14,4 @@ __pycache__/
 .env
 .venv/
 .git/
+images/

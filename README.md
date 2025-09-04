@@ -7,6 +7,7 @@ A comprehensive Python tool for extracting data from Hugging Face datasets store
 - 🚀 **Efficient Processing**: Handles large datasets with 100+ parquet files
 - 📊 **Progress Tracking**: Real-time progress bars and logging
 - 🖼️ **Image Handling**: Smart handling of image data in CSV format
+- 💾 **Local Image Storage**: Save images locally as PNG files with unique naming
 - 🛡️ **Error Handling**: Robust error handling and recovery
 - 📝 **Detailed Logging**: Comprehensive logging to file and console
 - ⚙️ **Configurable**: Command-line arguments for customization
@@ -64,22 +65,35 @@ python src/extract_dataset.py --data-dir "path/to/parquet/files" --output "my_da
 python src/extract_dataset.py --info-only
 ```
 
+**Extract data with image saving**:
+```bash
+python src/extract_dataset.py --save-images --images-dir "my_images"
+```
+
 ### Method 2: Python Script
 
 ```python
 from src.extract_dataset import DatasetExtractor
 
-# Initialize extractor
+# Initialize extractor (without image saving)
 extractor = DatasetExtractor("pmc_clinical_VQA_raw/data", "output.csv")
 
+# Initialize extractor with image saving
+extractor_with_images = DatasetExtractor(
+    data_directory="pmc_clinical_VQA_raw/data", 
+    output_file="output_with_images.csv",
+    save_images=True,
+    images_dir="extracted_images"
+)
+
 # Extract all data
-extractor.extract_all_data()
+extractor_with_images.extract_all_data()
 
 # Save to CSV
-extractor.save_to_csv()
+extractor_with_images.save_to_csv()
 
 # Get dataset information
-info = extractor.get_dataset_info()
+info = extractor_with_images.get_dataset_info()
 print(f"Extracted {info['total_records']} records")
 ```
 
@@ -89,6 +103,29 @@ print(f"Extracted {info['total_records']} records")
 python src/example_usage.py
 ```
 
+## Image Saving Feature
+
+The tool now supports saving images locally when extracting datasets. This is particularly useful for:
+
+- **Offline analysis**: Work with images without internet connectivity
+- **Data backup**: Keep local copies of all images
+- **Custom processing**: Apply your own image processing pipelines
+- **Dataset distribution**: Share complete datasets with images
+
+### How Image Saving Works:
+
+1. **Automatic Detection**: The tool automatically detects image fields in the dataset
+2. **Unique Naming**: Images are saved with unique filenames: `image_000001_a1b2c3d4.png`
+3. **Format Conversion**: All images are saved as PNG files for consistency
+4. **Path Tracking**: The CSV file contains local paths to the saved images
+5. **Error Handling**: Failed image saves are logged but don't stop the extraction
+
+### Image Naming Convention:
+- Format: `image_{record_index:06d}_{hash}.png`
+- Example: `image_000001_a1b2c3d4.png`
+- Record index ensures uniqueness across the dataset
+- Hash prevents duplicate images from being saved multiple times
+
 ## Command Line Options
 
 | Option | Description | Default |
@@ -96,18 +133,30 @@ python src/example_usage.py
 | `--data-dir` | Directory containing parquet files | `pmc_clinical_VQA_raw/data` |
 | `--output` | Output CSV file name | `extracted_dataset.csv` |
 | `--info-only` | Show dataset info without extracting | `False` |
+| `--save-images` | Save images locally to a directory | `False` |
+| `--images-dir` | Directory to save images | `images` |
 
 ## Output
 
 The script generates:
 - **CSV file**: Contains all extracted data with proper headers
+- **Images directory**: Local images saved as PNG files (when `--save-images` is used)
 - **Log file**: `extraction.log` with detailed processing information
 - **Console output**: Real-time progress and summary information
 
 ### Sample Output Structure:
+
+**Without image saving**:
 ```csv
 image,image_id,question_1,answer_1,question_2,answer_2,image_primary_label,image_secondary_label,caption,inline_mentions,image_size,article_license,article_title,article_citation,article_journal
 Image available (size: (512, 512)),img_001,What is shown in this image?,This shows a skin lesion,What type of lesion is this?,Melanoma,skin_lesion,melanoma,A clinical image of a skin lesion,patient presents with,512x512,CC BY 4.0,Clinical Study of Skin Lesions,Smith et al. 2023,Journal of Dermatology
+...
+```
+
+**With image saving**:
+```csv
+image,image_id,question_1,answer_1,question_2,answer_2,image_primary_label,image_secondary_label,caption,inline_mentions,image_size,article_license,article_title,article_citation,article_journal
+images/image_000001_a1b2c3d4.png,img_001,What is shown in this image?,This shows a skin lesion,What type of lesion is this?,Melanoma,skin_lesion,melanoma,A clinical image of a skin lesion,patient presents with,512x512,CC BY 4.0,Clinical Study of Skin Lesions,Smith et al. 2023,Journal of Dermatology
 ...
 ```
 
@@ -138,6 +187,7 @@ All operations are logged to both console and `extraction.log` file:
 - pandas >= 1.5.0
 - pyarrow >= 10.0.0
 - tqdm >= 4.64.0
+- Pillow >= 9.0.0 (for image processing)
 
 ## Troubleshooting
 
