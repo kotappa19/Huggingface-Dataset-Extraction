@@ -1,0 +1,15 @@
+*.csv
+*.json
+*.log
+*.pyc
+*.pyo
+*.pyd
+*.pyw
+*.pyz
+pmc_clinical_VQA_raw/
+dataset_extraction/
+__pycache__/
+.DS_Store
+.env
+.venv/
+.git/
